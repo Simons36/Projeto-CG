@@ -1,5 +1,7 @@
 /*global THREE, requestAnimationFrame, console*/
 
+var cameras = Array(5); //5 cameras
+
 var camera, scene, renderer;
 
 var geometry, material, mesh;
@@ -64,24 +66,28 @@ function createScene() {
     'use strict';
 
     scene = new THREE.Scene();
-
-
     scene.add(new THREE.AxisHelper(10));
+
+    scene.background = new THREE.Color(0xb3e6ff); //change background color
+
+
 
     createTable(0, 8, 0);
     createBall(0, 0, 15);
 }
 
-function createCamera() {
+function createCamera(array) {
     'use strict';
-    camera = new THREE.PerspectiveCamera(70,
+
+    let cameraTemp = new THREE.PerspectiveCamera(70,
                                          window.innerWidth / window.innerHeight,
                                          1,
                                          1000);
-    camera.position.x = 50;
-    camera.position.y = 50;
-    camera.position.z = 50;
-    camera.lookAt(scene.position);
+    cameraTemp.position.x = array[0];
+    cameraTemp.position.y = array[1];
+    cameraTemp.position.z = array[2];
+    cameraTemp.lookAt(scene.position);
+    return cameraTemp;
 }
 
 function onResize() {
@@ -93,6 +99,8 @@ function onResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
     }
+
+    console.log("Resized");
 
 }
 
@@ -120,7 +128,25 @@ function onKeyDown(e) {
             }
         });
         break;
+    case 49: //1
+        camera = cameras[0];
+        console.log(typeof cameras[0]);
+        break;
+    case 50: //2
+        camera = cameras[1];
+        break;
+    case 51: //3
+        camera = cameras[2];
+        break;
+    case 52: //4
+        camera = cameras[3];
+        break;
+    case 53: //5
+        camera = cameras[4];
+        break;
     }
+
+
 }
 
 function render() {
@@ -137,7 +163,7 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     createScene();
-    createCamera();
+    createCameras();
 
     render();
 
@@ -156,4 +182,20 @@ function animate() {
     render();
 
     requestAnimationFrame(animate);
+}
+
+function createCameras(){
+    const cameraPositions = Array(Array(3));
+
+    cameraPositions[0] = [50, 0, 0]; //camera frontal
+    cameraPositions[1] = [0, 0, 50]; //camera lateral
+    cameraPositions[2] = [0, 50, 0]; //camera topo
+    cameraPositions[3] = [50, 50, 50] //camera global1
+    cameraPositions[4] = [50, 50, 50] //camera global2
+
+    for(let i = 0; i < 5; i++){
+        cameras[i] = createCamera(cameraPositions[i]);
+    }
+
+    camera = cameras[0]; //camera inicial
 }
