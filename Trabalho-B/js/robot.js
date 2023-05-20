@@ -221,6 +221,15 @@ function createReboque(x, y, z) {
 }
 
 
+var keyStates = {
+  left: false,
+  right: false,
+  up: false,
+  down: false
+};
+
+
+
 function onKeyDown(e) {
   'use strict';
 
@@ -257,16 +266,16 @@ function onKeyDown(e) {
       camera = cameras[4];
       break;
     case 37: // Seta esquerda
-      trailerDirection.set(-1, 0, 0);
+      keyStates.left = true;
       break;
     case 39: // Seta direita
-      trailerDirection.set(1, 0, 0);
+      keyStates.right = true;
       break;
     case 38: // Seta cima
-      trailerDirection.set(0, 0, -1);
+      keyStates.up = true;
       break;
     case 40: // Seta baixo
-      trailerDirection.set(0, 0, 1);
+      keyStates.down = true;
       break;
   }
 }
@@ -276,12 +285,43 @@ function onKeyUp(e) {
 
   switch (e.keyCode) {
     case 37: // Seta esquerda
+      keyStates.left = false;
+      break;
     case 39: // Seta direita
+      keyStates.right = false;
+      break;
     case 38: // Seta cima
+      keyStates.up = false;
+      break;
     case 40: // Seta baixo
-      trailerDirection.set(0, 0, 0); // Redefine a direção do movimento para zero
+      keyStates.down = false;
       break;
   }
+}
+
+function updateTrailerMovement() {
+  'use strict';
+
+  var directionX = 0;
+  var directionZ = 0;
+
+  if (keyStates.left) {
+    directionX -= 1;
+  }
+
+  if (keyStates.right) {
+    directionX += 1;
+  }
+
+  if (keyStates.up) {
+    directionZ -= 1;
+  }
+
+  if (keyStates.down) {
+    directionZ += 1;
+  }
+
+  trailerDirection.set(directionX, 0, directionZ);
 }
 
 function moveTrailer() {
@@ -301,6 +341,7 @@ function render() {
 function animate() {
   'use strict';
 
+  updateTrailerMovement();
   moveTrailer();
   render();
 
