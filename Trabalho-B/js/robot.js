@@ -3,8 +3,20 @@
 var cameras = Array(5); // 5 câmeras
 var camera, scene, renderer;
 
-var trailerSpeed = 0.1; // Velocidade de movimento do reboque
+var trailerSpeed = 0.5; // Velocidade de movimento do reboque
 var trailerDirection = new THREE.Vector3(); // Direção do movimento do reboque
+
+//list of all materials
+var materials = [];
+
+var legGroupArray = []; // Array to store legGroup objects
+var footGroupArray = []; // Array to store footGroup objects
+var armGroupArray = []; // Array to store armGroup objects
+
+var legRotateSpeed = 0.05; // Rotation speed for the legs
+var footRotateSpeed = 0.05; // Rotation speed for the feet
+var headRotateSpeed = 0.05; // Rotation speed for the arms
+
 
 
 function createGeometry(width, height, depth) {
@@ -14,7 +26,9 @@ function createGeometry(width, height, depth) {
 }
 
 function createMaterial(color) {
-  return new THREE.MeshBasicMaterial({ color });
+  const material = new THREE.MeshBasicMaterial({ color });
+  materials.push(material);
+  return material;
 }
 
 function createMesh(obj, geometry, material, x, y, z) {
@@ -48,13 +62,16 @@ function addCintura(obj, x, y, z) {
   const [geometry, edges] = createGeometry(7, 2, 4);
   const material = createMaterial(0xffffff);
   const cintura = createMesh(obj, geometry, material, x, y, z + 10);
+  cintura.name = 'cintura';
   createOutline(cintura, edges, 0x6B6362);
 }
 
 function addHead(obj, x, y, z) {
+  
   const [geometry, edges] = createGeometry(2, 2, 2);
   const material = createMaterial(0x0000ff);
   const head = createMesh(obj, geometry, material, x, y + 5, z + 7);
+  head.name = 'head';
 
   const eyeGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.2);
   const eyeMaterial = createMaterial(0xffffff);
@@ -70,50 +87,108 @@ function addHead(obj, x, y, z) {
 function addArm(obj, side, x, y, z) {
   const [geometry, edges] = createGeometry(2, 3, 2);
   const material = createMaterial(0xff0000);
-  const mesh = createMesh(obj, geometry, material, x, y + 4.5, z + 7);
+
+  // Create the arm group object
+  const armGroup = new THREE.Group();
+  
+  // Create the arm mesh
+  const arm = createMesh(armGroup, geometry, material,  x, y + 4.5, z + 7);
+
   if (side === 'left') {
-    mesh.position.x -= 2.5;
+    arm.position.x -= 2.5;
   } else if (side === 'right') {
-    mesh.position.x += 2.5;
+    arm.position.x += 2.5;
   }
-  createOutline(mesh, edges, 0xffffff);
+
+  // Add the arm to the arm group
+  armGroup.add(arm);
+
+  const [loweArmGeometry, loweArmEdges] = createGeometry(2, 2, 6);
+  // Create the lower arm mesh
+  const lowerArm = createMesh(armGroup, loweArmGeometry, material, x, y + 2, z + 9);
+
+  if (side === 'left') {
+    lowerArm.position.x -= 2.5;
+  } else if (side === 'right') {
+    lowerArm.position.x += 2.5;
+  }
+
+  // Add the lower arm to the arm group
+  armGroup.add(lowerArm);
+  
+  // Add the arm group to the scene
+  obj.add(armGroup);
+
+  // Store the arm group object in the array
+  armGroupArray.push(armGroup);
+
+  createOutline(arm, edges, 0xffffff);
+  createOutline(lowerArm, loweArmEdges, 0xffffff);
 }
 
-function addLowerArm(obj, side, x, y, z) {
-  const [geometry, edges] = createGeometry(2, 2, 6);
-  const material = createMaterial(0xff0000);
-  const mesh = createMesh(obj, geometry, material, x, y + 2, z + 9);
-  if (side === 'left') {
-    mesh.position.x -= 2.5;
-  } else if (side === 'right') {
-    mesh.position.x += 2.5;
-  }
-  createOutline(mesh, edges, 0xffffff);
-}
 
 function addLeg(obj, side, x, y, z) {
+  const legGroup = new THREE.Group(); // Create a group to hold the leg assembly
+  legGroup.position.set(x, y, z); // Set the position of the leg assembly
+
   const [geometry, edges] = createGeometry(2.5, 2.5, 10);
   const material = createMaterial(0x0000ff);
-  const mesh = createMesh(obj, geometry, material, x, y, z + 1);
+  const leg = createMesh(legGroup, geometry, material, 0, 0, 1); // Add the leg to the leg group
+  leg.position.set(0, 0, 1); // Set the position of the leg relative to the leg group
   if (side === 'left') {
-    mesh.position.x -= 2;
+    leg.position.x -= 2;
   } else if (side === 'right') {
-    mesh.position.x += 2;
+    leg.position.x += 2;
   }
-  createOutline(mesh, edges, 0xffffff);
+  createOutline(leg, edges, 0xffffff);
+
+  const coxaGroup = new THREE.Group(); // Create a group for the coxa
+  coxaGroup.position.set(0, 0, 6); // Set the position of the coxa relative to the leg
+  leg.add(coxaGroup); // Add the coxa group as a child of the leg
+
+  const [coxaGeometry, coxaEdges] = createGeometry(1.5, 1.5, 4);
+  const coxaMaterial = createMaterial(0xffffff);
+  const coxa = createMesh(coxaGroup, coxaGeometry, coxaMaterial, 0, 0, 0); // Add the coxa to the coxa group
+  createOutline(coxa, coxaEdges, 0x6B6362);
+
+  const footGroup = new THREE.Group(); // Create a group for the foot
+  footGroup.position.set(0, 0, -6); // Set the position of the foot relative to the leg
+  leg.add(footGroup); // Add the foot group as a child of the leg
+  footGroupArray.push(footGroup);
+
+  const [footGeometry, footEdges] = createGeometry(2.5, 2.5, 2);
+  const footMaterial = createMaterial(0x0000ff);
+  const foot = createMesh(footGroup, footGeometry, footMaterial, 0, 0, 0); // Add the foot to the foot group
+  createOutline(foot, footEdges, 0xffffff);
+
+  let wheelPositions; // Declare wheelPositions variable
+
+  if (side === 'left') {
+    wheelPositions = [
+      [-2, 0, -5], // back-right wheel
+      [-2, 0, -2], // backmid-right wheel
+    ];
+  } else if (side === 'right') {
+    wheelPositions = [
+      [2, 0, -5], // front-left wheel
+      [2, 0, -2], // frontmid-leg wheel
+    ];
+  }
+
+  for (let i = 0; i < 2; i++) {
+    const wheelGroup = new THREE.Group(); // Create a group for each wheel
+    wheelGroup.position.set(wheelPositions[i][0], wheelPositions[i][1], wheelPositions[i][2]);
+    leg.add(wheelGroup); // Add the wheel group as a child of the leg
+
+    addWheel(wheelGroup, side, 0, 0, 0); // Add the wheel to the wheel group
+  }
+
+  legGroupArray.push(legGroup);
+  obj.add(legGroup); // Add the leg group to the robot object
+
 }
 
-function addCoxa(obj, side, x, y, z) {
-  const [geometry, edges] = createGeometry(1.5, 1.5, 2);
-  const material = createMaterial(0xffffff);
-  const mesh = createMesh(obj, geometry, material, x, y, z + 7);
-  if (side === 'left') {
-    mesh.position.x -= 2;
-  } else if (side === 'right') {
-    mesh.position.x += 2;
-  }
-  createOutline(mesh, edges, 0x6B6362);
-}
+
 
 function addWheel(obj, side, x, y, z) {
   const pneuGeometry = new THREE.CylinderGeometry(1.5, 1.5, 1, 32);
@@ -133,26 +208,15 @@ function addWheel(obj, side, x, y, z) {
   }
 }
 
-function addFeet(obj, side, x, y, z) {
-  const [geometry, edges] = createGeometry(2.5, 2.5, 2);
-  const material = createMaterial(0x0000ff);
-  const mesh = createMesh(obj, geometry, material, x, y, z - 5);
-  if (side === 'left') {
-    mesh.position.x -= 2;
-  } else if (side === 'right') {
-    mesh.position.x += 2;
-  }
-  createOutline(mesh, edges, 0xffffff);
-}
 
 function addEscape(obj, side, x, y, z) {
   const geometry = new THREE.CylinderGeometry(0.3, 0.3, 4, 32);
   const material = createMaterial(0x000000);
-  const mesh = createMesh(obj, geometry, material, x, y + 5, z + 5.5);
+  const escape = createMesh(obj, geometry, material, x, y + 5, z + 5.5);
   if (side === 'left') {
-    mesh.position.x -= 2.5;
+    escape.position.x -= 2.5;
   } else if (side === 'right') {
-    mesh.position.x += 2.5;
+    escape.position.x += 2.5;
   }
 }
 
@@ -164,29 +228,19 @@ function createRobot(x, y, z) {
   addCintura(robot, x, y, z);
   addArm(robot, 'left', x, y, z);
   addArm(robot, 'right', x, y, z);
-  addLowerArm(robot, 'left', x, y, z);
-  addLowerArm(robot, 'right', x, y, z);
-  addHead(robot, x, y, z);
 
-  addCoxa(robot, 'left', x, y, z);
-  addCoxa(robot, 'right', x, y, z);
+  addHead(robot, x, y, z);
 
   addLeg(robot, 'left', x, y, z);
   addLeg(robot, 'right', x, y, z);
 
   addWheel(robot, 'right', x + 4, y, z + 8);
-  addWheel(robot, 'right', x + 4, y, z - 3);
-  addWheel(robot, 'right', x + 4, y, z);
 
   addWheel(robot, 'left', x - 4, y, z + 8);
-  addWheel(robot, 'left', x - 4, y, z - 3);
-  addWheel(robot, 'left', x - 4, y, z);
 
-  addFeet(robot, 'left', x, y, z);
-  addFeet(robot, 'right', x, y, z);
 
-  addEscape(robot, 'left', x, y, z);
-  addEscape(robot, 'right', x, y, z);
+  /*addEscape(robot, 'left', x, y, z);
+  addEscape(robot, 'right', x, y, z);*/
 
   scene.add(robot);
 }
@@ -198,18 +252,33 @@ function addContentor(reboque, x, y, z) {
   createOutline(contentor, edges, 0xffffff);
 }
 
-function addLigacao(reboque, x, y, z) {
+function addSuporte(reboque, x, y, z) {
   const [geometry, edges] = createGeometry(6.5, 2.5, 10);
   const material = createMaterial(0x0000ff);
-  const mesh = createMesh(reboque, geometry, material, x, y, z + 5);
-  createOutline(mesh, edges, 0xffffff);
+  const suporte = createMesh(reboque, geometry, material, x, y, z + 5);
+  createOutline(suporte, edges, 0xffffff);
+}
+
+function addPeçaLigação(reboque, side, x, y, z) {
+  const geometry = new THREE.CylinderGeometry(0.5, 0.5, 1.5, 32);
+  const material = createMaterial(0x000000);
+  const peçaLigação = createMesh(reboque, geometry, material, x, y, z+11);
+  peçaLigação.rotation.x = Math.PI / 2;
+  if (side === 'left') {
+    peçaLigação.position.x -= 2;
+  } else if (side === 'right') {
+    peçaLigação.position.x += 2;
+  }
 }
 
 function createReboque(x, y, z) {
   const reboque = new THREE.Object3D();
   reboque.name = 'reboque';
   addContentor(reboque, x, y, z);
-  addLigacao(reboque, x, y, z);
+  addSuporte(reboque, x, y, z);
+
+  addPeçaLigação(reboque, 'left', x, y, z);
+  addPeçaLigação(reboque, 'right', x, y, z);
 
   addWheel(reboque, 'right', x + 4, y, z + 2);
   addWheel(reboque, 'right', x + 4, y, z + 5);
@@ -221,29 +290,45 @@ function createReboque(x, y, z) {
 }
 
 
-var keyStates = {
+var trailerKeyStates = {
   left: false,
   right: false,
   up: false,
   down: false
 };
 
+var legRotateKeyStates = {
+  up: false,
+  down: false
+};
+
+var footRotateKeyStates = {
+  up: false,
+  down: false
+};
+
+var armTranslateKeyStates = {
+  open: false,
+  close: false
+};
+
+var headRotateKeyStates = {
+  up: false,
+  down: false,
+}
 
 
 function onKeyDown(e) {
   'use strict';
 
   switch (e.keyCode) {
-    case 65: // A
-    case 97: // a
-      scene.traverse(function (node) {
-        if (node instanceof THREE.Mesh) {
-          node.material.wireframe = !node.material.wireframe;
-        }
-      });
+    case 54: // 6
+      // for material in the list material, change wireframe
+      for (var i = 0; i < materials.length; i++) {
+        materials[i].wireframe = !materials[i].wireframe;
+      }
       break;
-    case 69: // E
-    case 101: // e
+    case 55: // 7
       scene.traverse(function (node) {
         if (node instanceof THREE.AxisHelper) {
           node.visible = !node.visible;
@@ -266,16 +351,48 @@ function onKeyDown(e) {
       camera = cameras[4];
       break;
     case 37: // Seta esquerda
-      keyStates.left = true;
+      trailerKeyStates.left = true;
       break;
     case 39: // Seta direita
-      keyStates.right = true;
+      trailerKeyStates.right = true;
       break;
     case 38: // Seta cima
-      keyStates.up = true;
+      trailerKeyStates.up = true;
       break;
     case 40: // Seta baixo
-      keyStates.down = true;
+      trailerKeyStates.down = true;
+      break;
+    case 87: // W
+    case 119: // w
+      legRotateKeyStates.up = true;
+      break;
+    case 83: // S
+    case 115: // s
+      legRotateKeyStates.down = true;
+      break;
+    case 81: // Q
+    case 113: // q
+      footRotateKeyStates.up = true;
+      break;
+    case 65: // A
+    case 97: // a
+      footRotateKeyStates.down = true;
+      break;
+    case 69: // E
+    case 101: // e
+      armTranslateKeyStates.open = true;
+      break;
+    case 68: // D
+    case 100: // d
+      armTranslateKeyStates.close = true;
+      break;
+    case 82: // R
+    case 114: // r
+      headRotateKeyStates.up = true;
+      break;
+    case 70: // F
+    case 102: // f
+      headRotateKeyStates.down = true;
       break;
   }
 }
@@ -285,16 +402,48 @@ function onKeyUp(e) {
 
   switch (e.keyCode) {
     case 37: // Seta esquerda
-      keyStates.left = false;
+      trailerKeyStates.left = false;
       break;
     case 39: // Seta direita
-      keyStates.right = false;
+      trailerKeyStates.right = false;
       break;
     case 38: // Seta cima
-      keyStates.up = false;
+      trailerKeyStates.up = false;
       break;
     case 40: // Seta baixo
-      keyStates.down = false;
+      trailerKeyStates.down = false;
+      break;
+    case 87: // W
+    case 119: // w
+      legRotateKeyStates.up = false;
+      break;
+    case 83: // S
+    case 115: // s
+      legRotateKeyStates.down = false;
+      break;
+    case 81: // Q
+    case 113: // q
+      footRotateKeyStates.up = false;
+      break;
+    case 65: // A
+    case 97: // a
+      footRotateKeyStates.down = false;
+      break;
+    case 69: // E
+    case 101: // e
+      armTranslateKeyStates.open = false;
+      break;
+    case 68: // D
+    case 100: // d
+      armTranslateKeyStates.close = false;
+      break;
+    case 82: // R
+    case 114: // r
+      headRotateKeyStates.up = false;
+      break;
+    case 70: // F
+    case 102: // f
+      headRotateKeyStates.down = false;
       break;
   }
 }
@@ -304,23 +453,18 @@ function updateTrailerMovement() {
 
   var directionX = 0;
   var directionZ = 0;
-
-  if (keyStates.left) {
+  if (trailerKeyStates.left) {
     directionX -= 1;
   }
-
-  if (keyStates.right) {
+  if (trailerKeyStates.right) {
     directionX += 1;
   }
-
-  if (keyStates.up) {
+  if (trailerKeyStates.up) {
     directionZ -= 1;
   }
-
-  if (keyStates.down) {
+  if (trailerKeyStates.down) {
     directionZ += 1;
   }
-
   trailerDirection.set(directionX, 0, directionZ);
 }
 
@@ -333,6 +477,197 @@ function moveTrailer() {
   }
 }
 
+function rotateLegs() {
+  // Get the cintura mesh by name from the scene
+  const cintura = scene.getObjectByName('cintura');
+
+  // Get the center position of the cintura mesh
+  const cinturaCenter = cintura.position.clone();
+
+  // Define the maximum rotation angle (in radians)
+  const maxRotationAngle = Math.PI / 2; // 90 degrees in radians
+
+  // Rotate each leg group around the center of the cintura
+  for (let i = 0; i < legGroupArray.length; i++) {
+    const legGroup = legGroupArray[i];
+
+    // Calculate the vector from the cintura center to the leg group
+    const direction = legGroup.position.clone().sub(cinturaCenter);
+
+    // Calculate the desired rotation angle based on key states and leg position
+    let rotationAngle = 0;
+    const currentRotation = legGroup.rotation.x; // Get the current rotation angle around the X-axis
+    
+    if (legRotateKeyStates.up) { // 'W' key
+      const targetRotation = -maxRotationAngle; // Target rotation angle of -90 degrees 
+      if (currentRotation > targetRotation) {
+        rotationAngle = -legRotateSpeed; // Rotate towards the target angle
+      }
+    } else if (legRotateKeyStates.down) { // 'S' key
+      const targetRotation = -0.04; // Target rotation angle of 0 degrees (original position)
+      if (currentRotation < targetRotation) {
+        rotationAngle = legRotateSpeed; // Rotate towards the target angle
+      }
+    }
+
+    // Rotate the leg group around the cintura center
+    const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis
+    const rotationMatrix = new THREE.Matrix4().makeRotationAxis(rotationAxis, rotationAngle);
+    direction.applyMatrix4(rotationMatrix);
+    legGroup.position.copy(cinturaCenter.clone().add(direction));
+    legGroup.rotateOnAxis(rotationAxis, rotationAngle);
+  }
+}
+
+
+function rotateFeet() {
+  // Define the maximum rotation angle (in radians)
+  const maxRotationAngle = Math.PI / 2; // 90 degrees in radians
+
+  for (let i = 0; i < footGroupArray.length; i++) {
+    const footGroup = footGroupArray[i];
+    
+    if (footGroup) {
+      let rotationAngle = 0;
+
+      const currentRotation = footGroup.rotation.x; // Get the current rotation angle around the X-axis
+      
+      if (footRotateKeyStates.up) { // 'W' key
+      const targetRotation = -maxRotationAngle; // Target rotation angle of -90 degrees 
+      if (currentRotation > targetRotation) {
+        rotationAngle = -legRotateSpeed; // Rotate towards the target angle
+      }
+    } else if (footRotateKeyStates.down) { // 'S' key
+      const targetRotation = -0.04; // Target rotation angle of 0 degrees (original position)
+      if (currentRotation < targetRotation) {
+        rotationAngle = legRotateSpeed; // Rotate towards the target angle
+      }
+    }
+
+      const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis (adjust if needed)
+      footGroup.rotateOnAxis(rotationAxis, rotationAngle);
+
+      const direction = footGroup.position.clone().sub(new THREE.Vector3(0, 0, -3.74));
+      
+      const rotationMatrix = new THREE.Matrix4().makeRotationAxis(rotationAxis, rotationAngle);
+      direction.applyMatrix4(rotationMatrix);
+      
+      footGroup.position.copy(new THREE.Vector3(0, 0, -3.74).add(direction)); // Set the position of the foot group to the rotation point
+    }
+  }
+}
+
+
+
+function rotateHead() {
+  // Define the maximum rotation angle (in radians)
+  const maxRotationAngle = Math.PI / 2; // 90 degrees in radians
+
+  // Get the head object by name
+  const head = scene.getObjectByName('head');
+
+  if (head) {
+    let rotationAngle = 0;
+
+    const currentRotation = head.rotation.x; // Get the current rotation angle around the X-axis
+    console.log(currentRotation);
+
+    if (headRotateKeyStates.up) { // 'R' key
+      const targetRotation = maxRotationAngle; // Target rotation angle of -90 degrees
+      if (currentRotation < targetRotation) {
+        rotationAngle = headRotateSpeed; // Rotate towards the target angle
+      }
+    } else if (headRotateKeyStates.down) { // 'F' key
+      const targetRotation = 0; // Target rotation angle of 0 degrees (original position)
+      if (currentRotation > targetRotation) {
+        rotationAngle = -headRotateSpeed; // Rotate towards the target angle
+      }
+    }
+
+    const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis (adjust if needed)
+    head.rotateOnAxis(rotationAxis, rotationAngle);
+
+    const rotationPoint = new THREE.Vector3(5, 4.9, 16); // Rotation point coordinates
+    const direction = head.position.clone().sub(rotationPoint);
+
+    const rotationMatrix = new THREE.Matrix4().makeRotationAxis(rotationAxis, rotationAngle);
+    direction.applyMatrix4(rotationMatrix);
+
+    head.position.copy(rotationPoint.clone().add(direction)); // Set the position of the head to the rotation point
+  }
+}
+
+
+
+
+
+function translateArms() {
+  // Define the translation speed
+  var translationSpeed = 0.1; // Adjust the speed as needed
+
+  // Define the rotation speed for lower arm
+  var rotationSpeed = 0.2; // Adjust the speed as needed
+
+  // Define the limit of opening
+  var openingLimit = 2; // Adjust the limit as needed
+
+  // Loop through each arm group
+  for (var i = 0; i < armGroupArray.length; i++) {
+    var armGroup = armGroupArray[i];
+
+    if (armGroup) {
+      // Determine the translation direction based on key states
+      var translationDirection = 0;
+      if (armTranslateKeyStates.open) {
+        if (i === 0) {
+          // Check the opening limit for the left arm
+          if (armGroup.position.x > -openingLimit) {
+            translationDirection = -1; // Translate to the left
+          }
+        } else {
+          // Check the opening limit for the right arm
+          if (armGroup.position.x < openingLimit) {
+            translationDirection = 1; // Translate to the right
+          }
+        }
+      } else if (armTranslateKeyStates.close) {
+        // Check if the arm is not already at the original position
+        if (armGroup.position.x !== -0.2) {
+          if (i === 0) {
+            // Check if the arm is not going beyond the original position
+            if (armGroup.position.x + translationSpeed > 0) {
+              translationDirection = -1; // Translate to the left
+            } else {
+              translationDirection = 1; // Translate to the right
+            }
+          } else {
+            // Check if the arm is not going beyond the original position
+            if (armGroup.position.x - translationSpeed < 0) {
+              translationDirection = 1; // Translate to the right
+            } else {
+              translationDirection = -1; // Translate to the left
+            }
+          }
+        }
+      }
+
+      // Translate the arm group by the specified speed and direction
+      armGroup.position.x += translationSpeed * translationDirection;
+
+      // Rotate the lower arm
+      var lowerArm = armGroup.children[1]; // Assuming lower arm is the second child
+      if (i === 0) {
+        lowerArm.rotation.y = -rotationSpeed * -armGroup.position.x;
+      } else {
+        lowerArm.rotation.y = rotationSpeed * armGroup.position.x;
+      }
+    }
+  }
+}
+
+
+
+
 function render() {
   'use strict';
   renderer.render(scene, camera);
@@ -343,6 +678,15 @@ function animate() {
 
   updateTrailerMovement();
   moveTrailer();
+
+  rotateLegs();
+
+  rotateFeet();
+
+  translateArms();
+
+  rotateHead();
+
   render();
 
   requestAnimationFrame(animate);
@@ -367,7 +711,7 @@ function createScene() {
 
   scene.background = new THREE.Color(0xb3e6ff); // Alterar a cor do fundo
   createRobot(5, 0, 6.5);
-  createReboque(5, 0, -12);
+  createReboque(5, 0, -11);
 }
 
 function createCamera(array) {
