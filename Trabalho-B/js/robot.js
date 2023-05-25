@@ -56,7 +56,7 @@ function addBoundingBox(obj, name, width, height, depth, x, y, z) {
   materials.push(material)
   const boundingBox = createMesh(obj, geometry, material, x, y, z)
   boundingBox.name = name
-  createOutline(boundingBox, edges, 0xf502bc)
+  //createOutline(boundingBox, edges, 0xf502bc)
 }
 
 function addTronco(obj, x, y, z) {
