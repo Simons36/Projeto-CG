@@ -50,6 +50,15 @@ function createOutline(mesh, edges, color) {
   mesh.add(outline);
 }
 
+function addBoundingBox(obj, name, width, height, depth, x, y, z) {
+  const [geometry, edges] = createGeometry(width, height, depth)
+  const material = new THREE.MeshBasicMaterial({ visible: false });
+  materials.push(material)
+  const boundingBox = createMesh(obj, geometry, material, x, y, z)
+  boundingBox.name = name
+  createOutline(boundingBox, edges, 0xf502bc)
+}
+
 function addTronco(obj, x, y, z) {
   const [geometry, edges] = createGeometry(7, 3, 4);
   const material = createMaterial(0xff0000);
@@ -246,8 +255,9 @@ function createRobot(x, y, z) {
   addLeg(robot, 'right', x, y, z);
 
   addWheel(robot, 'right', x + 4, y, z + 8);
-
   addWheel(robot, 'left', x - 4, y, z + 8);
+
+  addBoundingBox(robot, 'robotBoundingBox', 2.5+4, 2.5, 10+1, x,y,z)
 
   scene.add(robot);
 }
@@ -295,7 +305,36 @@ function createReboque(x, y, z) {
   addWheel(reboque, 'left', x - 4, y, z + 2);
   addWheel(reboque, 'left', x - 4, y, z + 5);
 
+  addBoundingBox(reboque, 'reboqueBoundingBox',6.5, 2.5, 10+1.5, x, y, z+6)
+
   scene.add(reboque);
+}
+
+function AABBCollision(obj1, obj2) {
+  const box1 = new THREE.Box3().setFromObject(obj1)
+  const box2 = new THREE.Box3().setFromObject(obj2)
+  if (
+	box1.min.x <= box2.max.x && box1.max.x >= box2.min.x &&
+	box1.min.z <= box2.max.z && box1.max.z >= box2.min.z
+  ) {
+    return true
+  } else {
+	return false
+  }
+}
+
+function checkCollision() {
+  allTruckState = truckState.head && truckState.arms && truckState.legs && truckState.feet;
+  if (!collisionAnimation && allTruckState) {
+    const reboqueBoundingBox = scene.getObjectByName('reboqueBoundingBox')
+    const robotBoundingBox = scene.getObjectByName('robotBoundingBox')
+    if (AABBCollision(reboqueBoundingBox, robotBoundingBox)) {
+      const reboque = scene.getObjectByName('reboque');
+      reboque.position.setX(0);
+      reboque.position.setZ(-10);
+  	  collisionAnimation = true;
+    }
+  }
 }
 
 
@@ -323,7 +362,22 @@ var armTranslateKeyStates = {
 
 var headRotateKeyStates = {
   up: false,
-  down: false,
+  down: false
+};
+
+var collisionAnimation = false;
+
+var truckState = {
+  head: true,
+  arms: true,
+  legs: true,
+  feet: true
+}
+
+function changeCamera(cameraNumber) {
+  if (!collisionAnimation) {
+	camera = cameras[cameraNumber]
+  }
 }
 
 
@@ -345,19 +399,19 @@ function onKeyDown(e) {
       });
       break;
     case 49: // 1
-      camera = cameras[0];
+      changeCamera(0);
       break;
     case 50: // 2
-      camera = cameras[1];
+      changeCamera(1);
       break;
     case 51: // 3
-      camera = cameras[2];
+      changeCamera(2);
       break;
     case 52: // 4
-      camera = cameras[3];
+      changeCamera(3);
       break;
     case 53: // 5
-      camera = cameras[4];
+      changeCamera(4);
       break;
     case 37: // Seta esquerda
       trailerKeyStates.left = true;
@@ -459,7 +513,6 @@ function onKeyUp(e) {
 
 function updateTrailerMovement() {
   'use strict';
-
   var directionX = 0;
   var directionZ = 0;
   if (trailerKeyStates.left) {
@@ -481,8 +534,18 @@ function moveTrailer() {
   // Movimentar o reboque
   const reboque = scene.getObjectByName('reboque');
   if (reboque) {
-    reboque.translateX(trailerSpeed * trailerDirection.x);
-    reboque.translateZ(trailerSpeed * trailerDirection.z);
+	if (collisionAnimation) {
+	  if (reboque.position.z > 0) {
+	    reboque.position.setZ(0);
+		collisionAnimation = false;
+	  } else {
+		reboque.translateZ(trailerSpeed/4)
+	  }
+	}
+	else {
+      reboque.translateX(trailerSpeed * trailerDirection.x);
+      reboque.translateZ(trailerSpeed * trailerDirection.z);
+	}
   }
 }
 
@@ -511,13 +574,16 @@ function rotateLegs() {
     if (legRotateKeyStates.up) { // 'W' key
       const targetRotation = -maxRotationAngle; // Target rotation angle of -90 degrees 
       if (currentRotation > targetRotation) {
+		truckState.legs = false;
         rotationAngle = -legRotateSpeed; // Rotate towards the target angle
       }
     } else if (legRotateKeyStates.down) { // 'S' key
       const targetRotation = -0.04; // Target rotation angle of 0 degrees (original position)
       if (currentRotation < targetRotation) {
         rotationAngle = legRotateSpeed; // Rotate towards the target angle
-      }
+      } else {
+		truckState.legs = true;
+	  }
     }
 
     // Rotate the leg group around the cintura center
@@ -546,12 +612,15 @@ function rotateFeet() {
       const targetRotation = -maxRotationAngle; // Target rotation angle of -90 degrees 
       if (currentRotation > targetRotation) {
         rotationAngle = -legRotateSpeed; // Rotate towards the target angle
+		truckState.feet = false;
       }
     } else if (footRotateKeyStates.down) { // 'S' key
       const targetRotation = -0.04; // Target rotation angle of 0 degrees (original position)
       if (currentRotation < targetRotation) {
         rotationAngle = legRotateSpeed; // Rotate towards the target angle
-      }
+      } else {
+		truckState.feet = true;
+	  }
     }
 
       const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis 
@@ -585,12 +654,15 @@ function rotateHead() {
       const targetRotation = maxRotationAngle; // Target rotation angle of -90 degrees
       if (currentRotation < targetRotation) {
         rotationAngle = headRotateSpeed; // Rotate towards the target angle
+		truckState.head = false;
       }
     } else if (headRotateKeyStates.down) { // 'F' key
       const targetRotation = 0; // Target rotation angle of 0 degrees (original position)
       if (currentRotation > targetRotation) {
         rotationAngle = -headRotateSpeed; // Rotate towards the target angle
-      }
+      } else {
+		truckState.head = true;
+	  }
     }
 
     const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis 
@@ -641,12 +713,14 @@ function translateArms() {
             translationDirection = 1; // Translate to the right
           }
         }
+		truckState.arms = false;
       } else if (armTranslateKeyStates.close) {
           if (i === 0) {
             const closingLimit = armGroup.position.x - 0.2
             // Check if the arm is not going beyond the original position
             if (closingLimit + translationSpeed > 0) {
               translationDirection = -1; // Translate to the left
+			  truckState.arms = true;
             } else {
               translationDirection = 1; // Translate to the right
             }
@@ -655,6 +729,7 @@ function translateArms() {
             // Check if the arm is not going beyond the original position
             if (closingLimit - translationSpeed < 0) {
               translationDirection = 1; // Translate to the right
+			  truckState.arms = true;
             } else {
               translationDirection = -1; // Translate to the left
             }
@@ -678,7 +753,6 @@ function translateArms() {
 
 
 
-
 function render() {
   'use strict';
   renderer.render(scene, camera);
@@ -687,19 +761,19 @@ function render() {
 function animate() {
   'use strict';
 
+  checkCollision();
+
   updateTrailerMovement();
   moveTrailer();
 
-  rotateLegs();
-
-  rotateFeet();
-
-  translateArms();
-
-  rotateHead();
+  if (!collisionAnimation) {
+    rotateLegs();
+    rotateFeet();
+    translateArms();
+    rotateHead();
+  }
 
   render();
-
   requestAnimationFrame(animate);
 }
 
@@ -723,8 +797,6 @@ function createScene() {
   scene.background = new THREE.Color(0xb3e6ff); // Alterar a cor do fundo
   createRobot(5, 0, 6.5);
   createReboque(5, 0, -11);
-
-
 }
 
 function createPerspCamera(array) {
