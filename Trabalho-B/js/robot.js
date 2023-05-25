@@ -17,6 +17,12 @@ var legRotateSpeed = 0.05; // Rotation speed for the legs
 var footRotateSpeed = 0.05; // Rotation speed for the feet
 var headRotateSpeed = 0.05; // Rotation speed for the arms
 
+var leftLegBoundingBox
+var rightLegBoundingBox
+var reboqueBoundingBox;
+var rightLigacaoBoundingBox;
+var leftLigacaoBoundingBox;
+var suporteBoundingBox;
 
 
 function createGeometry(width, height, depth) {
@@ -112,13 +118,24 @@ function addArm(obj, side, x, y, z) {
   } else if (side === 'right') {
     lowerArm.position.x += 2.5;
   }
-
+  
   // Add the lower arm to the arm group
   armGroup.add(lowerArm);
+
+  
+  const escapeGeometry = new THREE.CylinderGeometry(0.3, 0.3, 4, 32);
+  const escapeMaterial = createMaterial(0x000000);
+  const escape = createMesh(armGroup, escapeGeometry, escapeMaterial, x, y + 5, z + 5.5);
+  if (side === 'left') {
+    escape.position.x -= 2.5;
+  } else if (side === 'right') {
+    escape.position.x += 2.5;
+  }
+  armGroup.add(escape);
   
   // Add the arm group to the scene
   obj.add(armGroup);
-
+  
   // Store the arm group object in the array
   armGroupArray.push(armGroup);
 
@@ -129,6 +146,9 @@ function addArm(obj, side, x, y, z) {
 
 function addLeg(obj, side, x, y, z) {
   const legGroup = new THREE.Group(); // Create a group to hold the leg assembly
+  //name with side
+  legGroup.name = `leg-${side}`;
+  console.log(legGroup.name);
   legGroup.position.set(x, y, z); // Set the position of the leg assembly
 
   const [geometry, edges] = createGeometry(2.5, 2.5, 10);
@@ -165,13 +185,13 @@ function addLeg(obj, side, x, y, z) {
 
   if (side === 'left') {
     wheelPositions = [
-      [-2, 0, -5], // back-right wheel
-      [-2, 0, -2], // backmid-right wheel
+      [-2, 0, -3], // back-right wheel
+      [-2, 0, 0], // backmid-right wheel
     ];
   } else if (side === 'right') {
     wheelPositions = [
-      [2, 0, -5], // front-left wheel
-      [2, 0, -2], // frontmid-leg wheel
+      [2, 0, -3], // front-left wheel
+      [2, 0, 0], // frontmid-leg wheel
     ];
   }
 
@@ -191,13 +211,13 @@ function addLeg(obj, side, x, y, z) {
 
 
 function addWheel(obj, side, x, y, z) {
-  const pneuGeometry = new THREE.CylinderGeometry(1.5, 1.5, 1, 32);
+  const pneuGeometry = new THREE.CylinderGeometry(1.3, 1.3, 1, 32);
   const pneuMaterial = createMaterial(0x000000);
   const pneu = createMesh(obj, pneuGeometry, pneuMaterial, x, y, z);
   pneu.rotation.x = Math.PI / 2;
   pneu.rotation.z = Math.PI / 2;
 
-  const calotaGeometry = new THREE.CircleGeometry(1, 32);
+  const calotaGeometry = new THREE.CircleGeometry(0.8, 32);
   const calotaMaterial = createMaterial(0xffffff);
   const calota = createMesh(obj, calotaGeometry, calotaMaterial, x, y, z);
   calota.rotation.y = Math.PI / 2;
@@ -209,19 +229,10 @@ function addWheel(obj, side, x, y, z) {
 }
 
 
-function addEscape(obj, side, x, y, z) {
-  const geometry = new THREE.CylinderGeometry(0.3, 0.3, 4, 32);
-  const material = createMaterial(0x000000);
-  const escape = createMesh(obj, geometry, material, x, y + 5, z + 5.5);
-  if (side === 'left') {
-    escape.position.x -= 2.5;
-  } else if (side === 'right') {
-    escape.position.x += 2.5;
-  }
-}
 
 function createRobot(x, y, z) {
   const robot = new THREE.Object3D();
+  robot.name = 'robot';
 
   addTronco(robot, x, y, z);
   addAbdomen(robot, x, y, z);
@@ -238,10 +249,6 @@ function createRobot(x, y, z) {
 
   addWheel(robot, 'left', x - 4, y, z + 8);
 
-
-  /*addEscape(robot, 'left', x, y, z);
-  addEscape(robot, 'right', x, y, z);*/
-
   scene.add(robot);
 }
 
@@ -256,6 +263,7 @@ function addSuporte(reboque, x, y, z) {
   const [geometry, edges] = createGeometry(6.5, 2.5, 10);
   const material = createMaterial(0x0000ff);
   const suporte = createMesh(reboque, geometry, material, x, y, z + 5);
+  suporte.name = 'suporte';
   createOutline(suporte, edges, 0xffffff);
 }
 
@@ -264,6 +272,7 @@ function addPeçaLigação(reboque, side, x, y, z) {
   const material = createMaterial(0x000000);
   const peçaLigação = createMesh(reboque, geometry, material, x, y, z+11);
   peçaLigação.rotation.x = Math.PI / 2;
+  peçaLigação.name = `ligacao-${side}`;
   if (side === 'left') {
     peçaLigação.position.x -= 2;
   } else if (side === 'right') {
@@ -485,7 +494,8 @@ function rotateLegs() {
   const cinturaCenter = cintura.position.clone();
 
   // Define the maximum rotation angle (in radians)
-  const maxRotationAngle = Math.PI / 2; // 90 degrees in radians
+  const maxRotationAngle = (Math.PI / 2) - 0.04; // 90 degrees in radians
+  console.log(maxRotationAngle);
 
   // Rotate each leg group around the center of the cintura
   for (let i = 0; i < legGroupArray.length; i++) {
@@ -544,7 +554,7 @@ function rotateFeet() {
       }
     }
 
-      const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis (adjust if needed)
+      const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis 
       footGroup.rotateOnAxis(rotationAxis, rotationAngle);
 
       const direction = footGroup.position.clone().sub(new THREE.Vector3(0, 0, -3.74));
@@ -561,7 +571,7 @@ function rotateFeet() {
 
 function rotateHead() {
   // Define the maximum rotation angle (in radians)
-  const maxRotationAngle = Math.PI / 2; // 90 degrees in radians
+  const maxRotationAngle = (Math.PI / 2) - 0.04; // 90 degrees in radians
 
   // Get the head object by name
   const head = scene.getObjectByName('head');
@@ -570,7 +580,6 @@ function rotateHead() {
     let rotationAngle = 0;
 
     const currentRotation = head.rotation.x; // Get the current rotation angle around the X-axis
-    console.log(currentRotation);
 
     if (headRotateKeyStates.up) { // 'R' key
       const targetRotation = maxRotationAngle; // Target rotation angle of -90 degrees
@@ -584,10 +593,10 @@ function rotateHead() {
       }
     }
 
-    const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis (adjust if needed)
+    const rotationAxis = new THREE.Vector3(1, 0, 0); // X-axis 
     head.rotateOnAxis(rotationAxis, rotationAngle);
 
-    const rotationPoint = new THREE.Vector3(5, 4.9, 16); // Rotation point coordinates
+    const rotationPoint = new THREE.Vector3(5,4.8, 15.5); // Rotation point coordinates
     const direction = head.position.clone().sub(rotationPoint);
 
     const rotationMatrix = new THREE.Matrix4().makeRotationAxis(rotationAxis, rotationAngle);
@@ -603,21 +612,23 @@ function rotateHead() {
 
 function translateArms() {
   // Define the translation speed
-  var translationSpeed = 0.1; // Adjust the speed as needed
+  var translationSpeed = 0.1; 
 
   // Define the rotation speed for lower arm
-  var rotationSpeed = 0.2; // Adjust the speed as needed
+  var rotationSpeed = 0.2; 
 
   // Define the limit of opening
-  var openingLimit = 2; // Adjust the limit as needed
+  var openingLimit = 2; 
 
   // Loop through each arm group
   for (var i = 0; i < armGroupArray.length; i++) {
     var armGroup = armGroupArray[i];
 
+
     if (armGroup) {
       // Determine the translation direction based on key states
       var translationDirection = 0;
+      const closingLimit = armGroup.position.x - 0.2
       if (armTranslateKeyStates.open) {
         if (i === 0) {
           // Check the opening limit for the left arm
@@ -631,18 +642,18 @@ function translateArms() {
           }
         }
       } else if (armTranslateKeyStates.close) {
-        // Check if the arm is not already at the original position
-        if (armGroup.position.x !== -0.2) {
           if (i === 0) {
+            const closingLimit = armGroup.position.x - 0.2
             // Check if the arm is not going beyond the original position
-            if (armGroup.position.x + translationSpeed > 0) {
+            if (closingLimit + translationSpeed > 0) {
               translationDirection = -1; // Translate to the left
             } else {
               translationDirection = 1; // Translate to the right
             }
           } else {
+            const closingLimit = armGroup.position.x + 0.2
             // Check if the arm is not going beyond the original position
-            if (armGroup.position.x - translationSpeed < 0) {
+            if (closingLimit - translationSpeed < 0) {
               translationDirection = 1; // Translate to the right
             } else {
               translationDirection = -1; // Translate to the left
@@ -663,7 +674,7 @@ function translateArms() {
       }
     }
   }
-}
+
 
 
 
@@ -712,9 +723,11 @@ function createScene() {
   scene.background = new THREE.Color(0xb3e6ff); // Alterar a cor do fundo
   createRobot(5, 0, 6.5);
   createReboque(5, 0, -11);
+
+
 }
 
-function createCamera(array) {
+function createPerspCamera(array) {
   'use strict';
 
   let cameraTemp = new THREE.PerspectiveCamera(50,
@@ -728,21 +741,43 @@ function createCamera(array) {
   return cameraTemp;
 }
 
-function createCameras() {
-  const cameraPositions = [
-    [50, 0, 0], // camera frontal
-    [0, 0, 50], // camera lateral
-    [0, 50, 0], // camera topo
-    [50, 50, 50], // camera global1
-    [50, 50, 50], // camera global2
+function createOrthoCameras() {
+  // Camera Size
+  const cameraSize = 20; // Adjust this value to change the camera view size
+
+  // Camera Positions and Orientations
+  const cameraConfigurations = [
+    { position: new THREE.Vector3(0, 0, cameraSize), target: new THREE.Vector3(0, 0, 0) }, // Top View
+    { position: new THREE.Vector3(cameraSize, 0, 0), target: new THREE.Vector3(0, 0, 0) }, // Lateral View
+    { position: new THREE.Vector3(0, cameraSize, 0), target: new THREE.Vector3(0, 0, 0) },  // Front View
+    { position: new THREE.Vector3(cameraSize, cameraSize, cameraSize), target: new THREE.Vector3(0, 0, 0) }  // Isometric View
   ];
 
-  for (let i = 0; i < 5; i++) {
-    cameras[i] = createCamera(cameraPositions[i]);
-  }
-
-  camera = cameras[0]; // Câmera inicial
+  cameraConfigurations.forEach((config, index) => {
+    const camera = new THREE.OrthographicCamera(
+      window.innerWidth / -20, // left
+      window.innerWidth / 20,  // right
+      window.innerHeight / 20, // top
+      window.innerHeight / -20,// bottom
+      1,                      // near
+      1000                    // far
+    );
+    camera.position.copy(config.position);
+    camera.lookAt(config.target);
+    cameras[index] = camera; // Assign the orthographic camera to the respective index of the 'cameras' array
+  });
 }
+
+
+function createCameras() {
+  createOrthoCameras(); // Call createOrthoCameras first to populate the orthographic cameras in the 'cameras' array
+
+  cameras[4] = createPerspCamera([50, 50, 50]);
+
+  camera = cameras[0]; // Initial camera
+}
+
+
 
 function init() {
   'use strict';
