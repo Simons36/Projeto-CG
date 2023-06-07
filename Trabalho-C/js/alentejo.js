@@ -11,6 +11,7 @@ let ovniVelocityX = 0;
 let ovniVelocityZ = 0;
 
 let directionalLight;
+let fieldMaterial;
 let fieldMesh;
 
 let skyTexture;
@@ -309,7 +310,7 @@ function createGeometry(vertices, indices, color) {
   
     // Main Stem (Oblique Cylinder)
     const mainStemGeometry = new THREE.CylinderGeometry(1 * scale, 0.5 * scale, 10 * scale, 8);
-    const mainStemMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
+    const mainStemMaterial = new THREE.MeshBasicMaterial({ color: 0x946700 }); //Laranja Acastanhado
     const mainStemMesh = new THREE.Mesh(mainStemGeometry, mainStemMaterial);
     mainStemMesh.position.set(x, y + 5 * scale, z);
     mainStemMesh.rotation.x = Math.PI / 6; // Incline the stem
@@ -317,7 +318,7 @@ function createGeometry(vertices, indices, color) {
   
     // Branch (Oblique Cylinder)
     const branchGeometry = new THREE.CylinderGeometry(0.4 * scale, 0.4 * scale, 5 * scale, 8);
-    const branchMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
+    const branchMaterial = new THREE.MeshBasicMaterial({ color: 0x946700 }); //Laranja Acastanhado
     const branchMesh = new THREE.Mesh(branchGeometry, branchMaterial);
     branchMesh.position.set(x, y + 6 * scale, z - 2 * scale);
     branchMesh.rotation.x = -Math.PI / 4; // Incline the branch
@@ -330,7 +331,7 @@ function createGeometry(vertices, indices, color) {
     const crownSegments = 16;
     const crownGeometry = new THREE.SphereGeometry(crownRadiusX, crownSegments, crownSegments);
     crownGeometry.scale(1, crownRadiusY / crownRadiusX, crownRadiusZ / crownRadiusX);
-    const crownMaterial = new THREE.MeshBasicMaterial({ color: 0x228B22 });
+    const crownMaterial = new THREE.MeshBasicMaterial({ color: 0x006400 });
     const crownMesh = new THREE.Mesh(crownGeometry, crownMaterial);
     crownMesh.position.set(x, y + 11 * scale, z + 2 * scale);
     sobreiro.add(crownMesh);
@@ -342,7 +343,7 @@ function createGeometry(vertices, indices, color) {
     const branchCrownSegments = 16;
     const branchCrownGeometry = new THREE.SphereGeometry(branchCrownRadiusX, branchCrownSegments, branchCrownSegments);
     branchCrownGeometry.scale(1, branchCrownRadiusY / branchCrownRadiusX, branchCrownRadiusZ / branchCrownRadiusX);
-    const branchCrownMaterial = new THREE.MeshBasicMaterial({ color: 0x228B22 });
+    const branchCrownMaterial = new THREE.MeshBasicMaterial({ color: 0x006400 });
     const branchCrownMesh = new THREE.Mesh(branchCrownGeometry, branchCrownMaterial);
     branchCrownMesh.position.set(x, y + 8 * scale, z - 3 * scale);
     sobreiro.add(branchCrownMesh);
@@ -436,10 +437,24 @@ function createOVNI(x, y, z) {
     const lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
     lightMesh.position.copy(position);
     ovni.add(lightMesh);
+    const pointLight = new THREE.PointLight(0xF7F446, 1, 30);
+    pointLight.position.copy(position);
+    pointLight.visible = false;
+    ovni.add(pointLight);
   }
+
+  const spotlight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 4, 0.2);
+  spotlight.position.set(x, y - baseRadiusY, z);
+  spotlight.target = ovni;
+  spotlight.visible = false;
+  ovni.add(spotlight);
+
   scene.add(ovni);
   return ovni;
 }
+
+
+
 
 function createLua() {
   const moonRadius = 10;
@@ -459,6 +474,7 @@ function createLua() {
   const lightPosition = new THREE.Vector3(Math.cos(lightAngle), Math.sin(lightAngle), 0);
   directionalLight = new THREE.DirectionalLight(lightColor, lightIntensity);
   directionalLight.position.copy(lightPosition);
+  directionalLight.visible = false;
   scene.add(directionalLight);
 
   const ambientLightColor = new THREE.Color('#202020'); // Low-intensity ambient light color
@@ -487,25 +503,12 @@ function createScene() {
   fieldGeometry.rotateX(-Math.PI / 2);
 
   // Generate the initial field texture and material
-  //fieldMaterial = generateInitialFieldMaterial();
-  const loader = new THREE.TextureLoader();
-  const heightmapTexture = loader.load("../images/heightmap.png");
-  
-  console.log(heightmapTexture);
-         
-  heightmapTexture.wrapS = heightmapTexture.wrapT = THREE.RepeatWrapping;
-  heightmapTexture.repeat.set(4, 4);
-  
-  // Create the material with the initial texture and heightmap
-  const fieldMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      displacementMap: heightmapTexture,
-      displacementScale: 100,
-    });
+  fieldMaterial = generateInitialFieldMaterial();
 
   // Create the field mesh
   const fieldMesh = new THREE.Mesh(fieldGeometry, fieldMaterial);
   scene.add(fieldMesh);
+  fieldMesh.position.y = -2;
 
 
   // Generate the initial sky texture with no stars
@@ -528,7 +531,6 @@ function createScene() {
   createRandomSobreiros(100);
 
   ovni = createOVNI(0, 30, 0);
-  createOVNILights();
 
   createLua();
 }
@@ -670,59 +672,7 @@ function updateOVNIVelocity() {
 
 
 
-function createOVNILights() {
-  // Point lights for small spheres
-  const pointLightColor = 0xffff00; // Yellow light color
-  const pointLightIntensity = 1; // Adjust the intensity as desired
-  
-  const pointLight1 = new THREE.PointLight(pointLightColor, pointLightIntensity);
-  pointLight1.position.set(10, 0, 0);
-  ovni.add(pointLight1);
-  
-  const pointLight2 = new THREE.PointLight(pointLightColor, pointLightIntensity);
-  pointLight2.position.set(-10, 0, 0);
-  ovni.add(pointLight2);
-  
-  const pointLight3 = new THREE.PointLight(pointLightColor, pointLightIntensity);
-  pointLight3.position.set(0, 0, 10);
-  ovni.add(pointLight3);
-
-  const pointLight4 = new THREE.PointLight(pointLightColor, pointLightIntensity);
-  pointLight4.position.set(0, 0, -10);
-  ovni.add(pointLight4);
-  
-  const pointLight5 = new THREE.PointLight(pointLightColor, pointLightIntensity);
-  pointLight5.position.set(12, 0, 12);
-  ovni.add(pointLight5);
-  
-  const pointLight6 = new THREE.PointLight(pointLightColor, pointLightIntensity);
-  pointLight6.position.set(-12, 0, -12);
-  ovni.add(pointLight6);
-  
-  const pointLight7 = new THREE.PointLight(pointLightColor, pointLightIntensity);
-  pointLight7.position.set(0, 12, 0);
-  ovni.add(pointLight7);
-  
-  const pointLight8 = new THREE.PointLight(pointLightColor, pointLightIntensity);
-  pointLight8.position.set(0, -12, 0);
-  ovni.add(pointLight8);
-  
-  // Spotlight for the cylinder
-  const spotlightColor = 0xffffff; // White light color
-  const spotlightIntensity = 1; // Adjust the intensity as desired
-  const spotlightAngle = Math.PI / 4; // Adjust the angle as desired
-  const spotlightPenumbra = 0.2; // Adjust the penumbra as desired
-  
-  const spotlight = new THREE.SpotLight(spotlightColor, spotlightIntensity);
-  spotlight.position.set(0, -10, 0);
-  spotlight.target = ovni; // Point the spotlight at the OVNI
-  spotlight.angle = spotlightAngle;
-  spotlight.penumbra = spotlightPenumbra;
-  ovni.add(spotlight);
-}
-
 function togglePointLights() {
-  console.log('hello');
   const pointLights = ovni.children.filter(child => child instanceof THREE.PointLight);
   pointLights.forEach(pointLight => {
     pointLight.visible = !pointLight.visible;
@@ -730,7 +680,6 @@ function togglePointLights() {
 }
 
 function toggleSpotlight() {
-  console.log('hi');
   const spotlight = ovni.children.find(child => child instanceof THREE.SpotLight);
   spotlight.visible = !spotlight.visible;
 }
