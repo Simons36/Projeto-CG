@@ -28,7 +28,7 @@ function generateInitialFieldMaterial() {
     const fieldMaterial = new THREE.MeshStandardMaterial({
       map: texture,
       displacementMap: heightmapTexture,
-      displacementScale: 15,
+      displacementScale: 20,
     });
   
     // Return the material instead of the texture

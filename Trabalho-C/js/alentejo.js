@@ -4,7 +4,131 @@ var cameras = Array(3); //3 cameras
 
 var camera, scene, renderer;
 
+var TelhadoMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0xD69F20 }),
+  phong: new THREE.MeshPhongMaterial({ color: 0xD69F20 }),
+  toon: new THREE.MeshToonMaterial({ color: 0xD69F20 }),
+};
+
+TelhadoMaterials.diffuse.flatShading = true;
+TelhadoMaterials.phong.flatShading = true;
+TelhadoMaterials.toon.flatShading = true;
+
+var ChamineMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0xffffff }),
+  phong: new THREE.MeshPhongMaterial({ color: 0xffffff }),
+  toon: new THREE.MeshToonMaterial({ color: 0xffffff }),
+};
+
+ChamineMaterials.diffuse.flatShading = true;
+ChamineMaterials.phong.flatShading = true;
+ChamineMaterials.toon.flatShading = true;
+
+var EstruturaMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0xffffff }),
+  phong: new THREE.MeshPhongMaterial({ color: 0xffffff}),
+  toon: new THREE.MeshToonMaterial({ color: 0xffffff }),
+};
+
+EstruturaMaterials.diffuse.flatShading = true;
+EstruturaMaterials.phong.flatShading = true;
+EstruturaMaterials.toon.flatShading = true;
+
+var TroncoMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0x946700 }),
+  phong: new THREE.MeshPhongMaterial({ color: 0x946700 }),
+  toon: new THREE.MeshToonMaterial({ color: 0x946700 }),
+};
+
+TroncoMaterials.diffuse.flatShading = true;
+TroncoMaterials.phong.flatShading = true;
+TroncoMaterials.toon.flatShading = true;
+
+
+var FolhasMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0x00ff00 }),
+  phong: new THREE.MeshPhongMaterial({ color: 0x00ff00 }),
+  toon: new THREE.MeshToonMaterial({ color: 0x00ff00 }),
+};
+
+FolhasMaterials.diffuse.flatShading = true;
+FolhasMaterials.phong.flatShading = true;
+FolhasMaterials.toon.flatShading = true;
+
+var CockpitMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0xffffff  }),
+  phong: new THREE.MeshPhongMaterial({ color: 0xffffff }),
+  toon: new THREE.MeshToonMaterial({ color: 0xffffff  }),
+};
+
+CockpitMaterials.diffuse.flatShading = true;
+CockpitMaterials.phong.flatShading = true;
+CockpitMaterials.toon.flatShading = true;
+
+
+var OVNIbaseMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0x000000 }),
+  phong: new THREE.MeshPhongMaterial({ color: 0x000000 }),
+  toon: new THREE.MeshToonMaterial({ color: 0x000000 }),
+};
+
+OVNIbaseMaterials.diffuse.flatShading = true;
+OVNIbaseMaterials.phong.flatShading = true;
+OVNIbaseMaterials.toon.flatShading = true;
+
+var OVNIluzesMaterials = { 
+  diffuse: new THREE.MeshLambertMaterial({ color: 0xffff00 }),
+  phong: new THREE.MeshPhongMaterial({ color: 0xffff00 }),
+  toon: new THREE.MeshToonMaterial({ color: 0xffff00 }),
+};
+
+OVNIluzesMaterials.diffuse.flatShading = true;
+OVNIluzesMaterials.phong.flatShading = true;
+OVNIluzesMaterials.toon.flatShading = true;
+
+
+var OVNIciliMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0x000000 }),
+  phong: new THREE.MeshPhongMaterial({ color: 0x000000 }),
+  toon: new THREE.MeshToonMaterial({ color: 0x000000 }),
+};
+
+OVNIciliMaterials.diffuse.flatShading = true;
+OVNIciliMaterials.phong.flatShading = true;
+OVNIciliMaterials.toon.flatShading = true;
+
+
+var LuaMaterials = {
+  diffuse: new THREE.MeshLambertMaterial({ color: 0xFFFF99 }),
+  phong: new THREE.MeshPhongMaterial({ color: 0xFFFF99 }),
+  toon: new THREE.MeshToonMaterial({ color: 0xFFFF99 }),
+};
+
+LuaMaterials.diffuse.flatShading = true;
+LuaMaterials.phong.flatShading = true;
+LuaMaterials.toon.flatShading = true;
+
+
+
+var shadingType = 'diffuse'; // Default shading type
+var lightingEnabled = true; // Lighting enabled by default
+
+let sceneMaterials = {
+  Telhado: TelhadoMaterials,
+  Chamine: ChamineMaterials,
+  Estrutura: EstruturaMaterials,
+  Tronco: TroncoMaterials,
+  Folhas: FolhasMaterials,
+  OVNIcockpit: CockpitMaterials,
+  OVNIbase: OVNIbaseMaterials,
+  OVNIluzes: OVNIluzesMaterials,
+  OVNIcili: OVNIciliMaterials,
+  Lua: LuaMaterials,
+};
+
+
 let ovni;
+let casa;
 
 let ovniRotationSpeed = 0.05;
 let ovniVelocityX = 0;
@@ -17,20 +141,19 @@ let fieldMesh;
 let skyTexture;
 let skyMesh;
 
-function createGeometry(vertices, indices, color) {
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.setIndex(indices);
-  
-    const material = new THREE.MeshBasicMaterial({ color: color });
-    const mesh = new THREE.Mesh(geometry, material);
-  
-    const edgesGeometry = new THREE.EdgesGeometry(geometry);
-    const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-    const wireframe = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-  
-    return { mesh, wireframe };
-  }
+function createGeometry(vertices, indices, material) {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+  geometry.setIndex(indices);
+
+  const mesh = new THREE.Mesh(geometry, material[shadingType]);
+
+  const edgesGeometry = new THREE.EdgesGeometry(geometry);
+  const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+  const wireframe = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+
+  return { mesh, wireframe };
+}
   
   function createTelhado(casa, x, y, z) {
     const vertices = new Float32Array([
@@ -54,8 +177,9 @@ function createGeometry(vertices, indices, color) {
       4, 3, 0, // Triângulo lateral 4
     ];
   
-    const { mesh, wireframe } = createGeometry(vertices, indices, 0x00ff00);
+    const { mesh, wireframe } = createGeometry(vertices, indices, sceneMaterials.Telhado);
     casa.add(mesh, wireframe);
+    mesh.name = 'Telhado';
   }
   
   function createChamine(casa, x, y, z) {
@@ -93,8 +217,9 @@ function createGeometry(vertices, indices, color) {
       7, 4, 6,
     ];
   
-    const { mesh, wireframe } = createGeometry(vertices, indices, 0xffff00);
+    const { mesh, wireframe } = createGeometry(vertices, indices, sceneMaterials.Chamine);
     casa.add(mesh, wireframe);
+    mesh.name = 'Chamine';
   }
   
   function createEstrutura(casa, x, y, z) {
@@ -132,177 +257,19 @@ function createGeometry(vertices, indices, color) {
       7, 4, 6,
     ];
   
-    const { mesh, wireframe } = createGeometry(vertices, indices, 0xff0000);
+    const { mesh, wireframe } = createGeometry(vertices, indices, sceneMaterials.Estrutura);
     casa.add(mesh, wireframe);
+    mesh.name = 'Estrutura';
   }
   
-  function createPorta(casa, x, y, z) {
-    const vertices = new Float32Array([
-      // Frente
-      20.5 + x, 0 + y, 3 + z,
-      20.5 + x, 0 + y, 6 + z,
-      20.5 + x, 6 + y, 3 + z,
-      20.5 + x, 6 + y, 6 + z,
-      // Trás
-      20.1 + x, 0 + y, 3 + z,
-      20.1 + x, 0 + y, 6 + z,
-      20.1 + x, 6 + y, 3 + z,
-      20.1 + x, 6 + y, 6 + z,
-    ]);
-  
-    const indices = [
-      // Frente
-      0, 1, 2,
-      2, 1, 3,
-      // Lado direito
-      1, 5, 3,
-      3, 5, 7,
-      // Lado esquerdo
-      4, 0, 6,
-      6, 0, 2,
-      // Topo
-      2, 3, 6,
-      6, 3, 7,
-      // Base
-      1, 0, 5,
-      5, 0, 4,
-      // Trás
-      5, 4, 7,
-      7, 4, 6,
-    ];
-  
-    const { mesh, wireframe } = createGeometry(vertices, indices, 0xffffff);
-    casa.add(mesh, wireframe);
-  }
-  
-  function createSideJanela(casa, x, y, z) {
-    const vertices = new Float32Array([
-      // Frente
-      3 + x, 3 + y, 10.5 + z,
-      6 + x, 3 + y, 10.5 + z,
-      3 + x, 6 + y, 10.5 + z,
-      6 + x, 6 + y, 10.5 + z,
-      // Trás
-      3 + x, 3 + y, 10.1 + z,
-      6 + x, 3 + y, 10.1 + z,
-      3 + x, 6 + y, 10.1 + z,
-      6 + x, 6 + y, 10.1 + z,
-    ]);
-  
-    const indices = [
-      // Frente
-      0, 1, 2,
-      2, 1, 3,
-      // Lado direito
-      1, 5, 3,
-      3, 5, 7,
-      // Lado esquerdo
-      4, 0, 6,
-      6, 0, 2,
-      // Topo
-      2, 3, 6,
-      6, 3, 7,
-      // Base
-      1, 0, 5,
-      5, 0, 4,
-      // Trás
-      5, 4, 7,
-      7, 4, 6,
-    ];
-  
-    const { mesh, wireframe } = createGeometry(vertices, indices, 0xffffff);
-    casa.add(mesh, wireframe);
-  }
-  
-  function createFrontJanela(casa, x, y, z) {
-    const vertices = new Float32Array([
-      // Frente
-      20.5 + x, 3 + y, -5 + z,
-      20.5 + x, 3 + y, -2 + z,
-      20.5 + x, 6 + y, -5 + z,
-      20.5 + x, 6 + y, -2 + z,
-      // Trás
-      20.1 + x, 3 + y, -5 + z,
-      20.1 + x, 3 + y, -2 + z,
-      20.1 + x, 6 + y, -5 + z,
-      20.1 + x, 6 + y, -2 + z,
-    ]);
-  
-    const indices = [
-      // Frente
-      0, 1, 2,
-      2, 1, 3,
-      // Lado direito
-      1, 5, 3,
-      3, 5, 7,
-      // Lado esquerdo
-      4, 0, 6,
-      6, 0, 2,
-      // Topo
-      2, 3, 6,
-      6, 3, 7,
-      // Base
-      1, 0, 5,
-      5, 0, 4,
-      // Trás
-      5, 4, 7,
-      7, 4, 6,
-    ];
-  
-    const { mesh, wireframe } = createGeometry(vertices, indices, 0xffffff);
-    casa.add(mesh, wireframe);
-  }
-  
-  function createSuporte(casa, x, y, z) {
-    const vertices = new Float32Array([
-      // Frente
-      -4 + x, 0 + y, 14 + z,
-      -2 + x, 0 + y, 14 + z,
-      -4 + x, 6 + y, 11 + z,
-      -2 + x, 6 + y, 11 + z,
-      // Trás
-      -4 + x, 0 + y, 10.3 + z,
-      -2 + x, 0 + y, 10.3 + z,
-      -4 + x, 6 + y, 10.1 + z,
-      -2 + x, 6 + y, 10.1 + z,
-    ]);
-  
-    const indices = [
-      // Frente
-      0, 1, 2,
-      2, 1, 3,
-      // Lado direito
-      1, 5, 3,
-      3, 5, 7,
-      // Lado esquerdo
-      4, 0, 6,
-      6, 0, 2,
-      // Topo
-      2, 3, 6,
-      6, 3, 7,
-      // Base
-      1, 0, 5,
-      5, 0, 4,
-      // Trás
-      5, 4, 7,
-      7, 4, 6,
-    ];
-  
-    const { mesh, wireframe } = createGeometry(vertices, indices, 0xffffff);
-    casa.add(mesh, wireframe);
-  }
   
   function createCasa(x, y, z) {
     const casa = new THREE.Group();
     createEstrutura(casa, x, y, z);
     createTelhado(casa, x, y, z);
     createChamine(casa, x, y, z);
-    createPorta(casa, x, y, z);
-    createSideJanela(casa, x, y, z);
-    createSideJanela(casa, x + 8, y, z);
-    createFrontJanela(casa, x, y, z);
-    createSuporte(casa, x, y, z);
     scene.add(casa);
+    return casa;
   }
 
   function createSobreiro(x, y, z, scale = 1, direction) {
@@ -310,19 +277,22 @@ function createGeometry(vertices, indices, color) {
   
     // Main Stem (Oblique Cylinder)
     const mainStemGeometry = new THREE.CylinderGeometry(1 * scale, 0.5 * scale, 10 * scale, 8);
-    const mainStemMaterial = new THREE.MeshBasicMaterial({ color: 0x946700 }); //Laranja Acastanhado
+    const mainStemMaterial = sceneMaterials.Tronco[shadingType] //Laranja Acastanhado
     const mainStemMesh = new THREE.Mesh(mainStemGeometry, mainStemMaterial);
     mainStemMesh.position.set(x, y + 5 * scale, z);
     mainStemMesh.rotation.x = Math.PI / 6; // Incline the stem
     sobreiro.add(mainStemMesh);
+    mainStemMesh.name = 'Tronco';
   
     // Branch (Oblique Cylinder)
     const branchGeometry = new THREE.CylinderGeometry(0.4 * scale, 0.4 * scale, 5 * scale, 8);
-    const branchMaterial = new THREE.MeshBasicMaterial({ color: 0x946700 }); //Laranja Acastanhado
+    const branchMaterial = sceneMaterials.Tronco[shadingType]; //Laranja Acastanhado
     const branchMesh = new THREE.Mesh(branchGeometry, branchMaterial);
     branchMesh.position.set(x, y + 6 * scale, z - 2 * scale);
     branchMesh.rotation.x = -Math.PI / 4; // Incline the branch
     sobreiro.add(branchMesh);
+    branchMesh.name = 'Ramo';
+
   
     // Sobreiro Crown (Flattened Ellipsoid)
     const crownRadiusX = 4.5 * scale;
@@ -331,10 +301,11 @@ function createGeometry(vertices, indices, color) {
     const crownSegments = 16;
     const crownGeometry = new THREE.SphereGeometry(crownRadiusX, crownSegments, crownSegments);
     crownGeometry.scale(1, crownRadiusY / crownRadiusX, crownRadiusZ / crownRadiusX);
-    const crownMaterial = new THREE.MeshBasicMaterial({ color: 0x006400 });
+    const crownMaterial = sceneMaterials.Folhas[shadingType]; //Verde Escuro
     const crownMesh = new THREE.Mesh(crownGeometry, crownMaterial);
     crownMesh.position.set(x, y + 11 * scale, z + 2 * scale);
     sobreiro.add(crownMesh);
+    crownMesh.name = 'Coroa';
   
     // Branch Crown (Flattened Ellipsoid)
     const branchCrownRadiusX = 2 * scale;
@@ -343,10 +314,11 @@ function createGeometry(vertices, indices, color) {
     const branchCrownSegments = 16;
     const branchCrownGeometry = new THREE.SphereGeometry(branchCrownRadiusX, branchCrownSegments, branchCrownSegments);
     branchCrownGeometry.scale(1, branchCrownRadiusY / branchCrownRadiusX, branchCrownRadiusZ / branchCrownRadiusX);
-    const branchCrownMaterial = new THREE.MeshBasicMaterial({ color: 0x006400 });
+    const branchCrownMaterial = sceneMaterials.Folhas[shadingType]; //Verde Escuro
     const branchCrownMesh = new THREE.Mesh(branchCrownGeometry, branchCrownMaterial);
     branchCrownMesh.position.set(x, y + 8 * scale, z - 3 * scale);
     sobreiro.add(branchCrownMesh);
+    branchCrownMesh.name = 'Coroa Ramo';
   
     // Set facing direction
     const target = new THREE.Vector3().addVectors(sobreiro.position, direction);
@@ -395,33 +367,36 @@ function createOVNI(x, y, z) {
   const baseSegments = 16;
   const baseGeometry = new THREE.SphereGeometry(baseRadiusX, baseSegments, baseSegments);
   baseGeometry.scale(1, baseRadiusY / baseRadiusX, baseRadiusZ / baseRadiusX);
-  const baseMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const baseMaterial = sceneMaterials.OVNIbase[shadingType];
   const baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
   baseMesh.position.set(x, y, z);
   ovni.add(baseMesh);
+  baseMesh.name = 'Base';
 
   // Cockpit (Half Sphere)
   const cockpitRadius = baseRadiusX * 0.8;
   const cockpitSegments = 32;
   const cockpitGeometry = new THREE.SphereGeometry(cockpitRadius, cockpitSegments, cockpitSegments, 0, Math.PI * 2, 0, Math.PI / 2);
-  const cockpitMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const cockpitMaterial = sceneMaterials.OVNIcockpit[shadingType];
   const cockpitMesh = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
   cockpitMesh.position.set(x, y + baseRadiusY - 4, z);
   ovni.add(cockpitMesh);
+  cockpitMesh.name = 'Cockpit';
 
   // Middle Cylinder
   const cylinderRadius = baseRadiusX * 0.3;
   const cylinderHeight = 1;
   const cylinderGeometry = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight, 32);
-  const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const cylinderMaterial = sceneMaterials.OVNIcili[shadingType];
   const cylinderMesh = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
   cylinderMesh.position.set(x, y - baseRadiusY, z);
   ovni.add(cylinderMesh);
+  cylinderMesh.name = 'Cilindro';
 
   // Lights (Spheres)
   const lightRadius = baseRadiusX * 0.11;
   const lightSegments = 8;
-  const lightMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  const lightMaterial = sceneMaterials.OVNIluzes[shadingType];
   const lightPositions = [
     new THREE.Vector3(x + baseRadiusX * 0.6, y - baseRadiusY + 2, z + baseRadiusZ * 0.6),
     new THREE.Vector3(x - baseRadiusX * 0.6, y - baseRadiusY + 2 , z + baseRadiusZ * 0.6),
@@ -437,9 +412,13 @@ function createOVNI(x, y, z) {
     const lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
     lightMesh.position.copy(position);
     ovni.add(lightMesh);
-    const pointLight = new THREE.PointLight(0xF7F446, 1, 30);
+    0xF7F446
+    const pointLightColor = 0xF7F446; // Lamp Yellow color
+    const pointLightIntensity = 0.05; // Adjust the intensity as needed
+    const pointLightDistance = 0; // No distance attenuation
+    const pointLight = new THREE.PointLight(pointLightColor, pointLightIntensity, pointLightDistance);
     pointLight.position.copy(position);
-    pointLight.visible = false;
+    pointLight.visible = true;
     ovni.add(pointLight);
   }
 
@@ -461,34 +440,30 @@ function createLua() {
   const moonSegments = 32;
   const moonGeometry = new THREE.SphereGeometry(moonRadius, moonSegments, moonSegments);
 
-  const moonColor = new THREE.Color('#FFFF99'); // Moon yellow color
-  const moonMaterial = new THREE.MeshBasicMaterial({ color: moonColor, emissive: moonColor });
+  const moonMaterial = sceneMaterials.Lua[shadingType];
 
   const moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
   moonMesh.position.set(-100, 150, 70);
   scene.add(moonMesh);
+  moonMesh.name = 'Lua';
 
   const lightColor = new THREE.Color('#FFFF99'); // Moon yellow color
-  const lightIntensity = 0.05;
+  const lightIntensity = 0.1; // Adjust the intensity as needed
   const lightAngle = Math.PI / 4; // Angle in radians (45 degrees)
   const lightPosition = new THREE.Vector3(Math.cos(lightAngle), Math.sin(lightAngle), 0);
   directionalLight = new THREE.DirectionalLight(lightColor, lightIntensity);
   directionalLight.position.copy(lightPosition);
-  directionalLight.visible = false;
+  directionalLight.visible = true; // Set to true to make the light visible
   scene.add(directionalLight);
 
-  const ambientLightColor = new THREE.Color('#202020'); // Low-intensity ambient light color
-  const ambientLightIntensity = 0.2;
+  const ambientLightColor = new THREE.Color('#000000'); // Low-intensity ambient light color
+  const ambientLightIntensity = 1;
   const ambientLight = new THREE.AmbientLight(ambientLightColor, ambientLightIntensity);
   scene.add(ambientLight);
 
 }
 
 
-
-
-
-   
   
 function createScene() {
   'use strict';
@@ -526,18 +501,16 @@ function createScene() {
 
 
 
-  createCasa(0, 0, 0);
+  casa = createCasa(0, 0, 0);
+  casa.name = 'Casa';
 
   createRandomSobreiros(100);
 
   ovni = createOVNI(0, 30, 0);
+  ovni.name = 'OVNI';
 
   createLua();
 }
-
-
-
-
 
 
 const ovniKeyStates = {
@@ -546,6 +519,8 @@ const ovniKeyStates = {
   ArrowLeft: false,
   ArrowRight: false,
 };
+
+
 
 function onKeyDown(e) {
   'use strict';
@@ -608,6 +583,18 @@ function onKeyDown(e) {
     case 100:
       directionalLight.visible = !directionalLight.visible;
       break;
+    case 81: // Q or q for Gouraud (diffuse) shading
+      shadingType = 'diffuse';
+      updateMaterials();
+      break;
+    case 87: // W or w for Phong shading
+      shadingType = 'phong';
+      updateMaterials();
+      break;
+    case 69: // E or e for Cartoon shading
+      shadingType = 'toon';
+      updateMaterials();
+      break;
     }
 }
 
@@ -636,11 +623,68 @@ function onKeyUp(e) {
     }
 
   }
+
+  function updateMaterials() {
+    'use strict';
   
-  function moveOVNI() {
+    const updateObjectMaterials = (object) => {
+      if (object instanceof THREE.Mesh) {
+        switch (object.name) {
+          case 'Telhado':
+            object.material = sceneMaterials.Telhado[shadingType];
+            break;
+          case 'Chamine':
+            object.material = sceneMaterials.Chamine[shadingType];
+            break;
+          case 'Estrutura':
+            object.material = sceneMaterials.Estrutura[shadingType];
+            break;
+          case 'Tronco':
+            object.material = sceneMaterials.Tronco[shadingType];
+            break;
+          case 'Folhas':
+            object.material = sceneMaterials.Folhas[shadingType];
+            break;
+          case 'Cockpit':
+            object.material = sceneMaterials.OVNIcockpit[shadingType];
+            break;
+          case 'OVNIbase':
+            object.material = sceneMaterials.OVNIbase[shadingType];
+            break;
+          case 'OVNIluzes':
+            object.material = sceneMaterials.OVNIluzes[shadingType];
+            break;
+          case 'OVNIcili':
+            object.material = sceneMaterials.OVNIcili[shadingType];
+            break;
+          case 'Lua':
+            object.material = sceneMaterials.Lua[shadingType];
+            break;
+        }
+      }
+    };
+  
+    const traverseObjects = (object) => {
+      if (object instanceof THREE.Object3D) {
+        object.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            updateObjectMaterials(child);
+          }
+        });
+      }
+    };
+  
+    traverseObjects(scene);
+  }
+
+
+
+function moveOVNI() {
     ovni.position.x += ovniVelocityX;
   ovni.position.z += ovniVelocityZ;
 }
+
+
 
 function updateOVNIVelocity() {
   const speed = 0.5; // Adjust the speed as desired
