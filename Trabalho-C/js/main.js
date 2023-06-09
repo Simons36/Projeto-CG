@@ -1,6 +1,7 @@
 /*global THREE, requestAnimationFrame, console*/
 
-var cameras = Array(3); // 3 cameras
+var cameras = Array(4); // 3 cameras
+var vrCamera;
 
 var container, camera, scene, controls, renderer;
 
@@ -292,12 +293,23 @@ function init() {
 
   container.appendChild(renderer.domElement);
 
-  // Create and configure the camera
+  // Create and configure the main camera
   camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
   camera.position.set(200, 200, 200);
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
   cameras[2] = camera;
 
+  // Create and configure the VR camera
+  vrCamera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+  vrCamera.position.set(50, 10, 50); // Set VR camera's position
+
+  // Create a group for the VR camera
+  const vrCameraGroup = new THREE.Group();
+  vrCameraGroup.add(vrCamera); // Add vrCamera to the group
+  cameras[3] = vrCameraGroup; // Add vrCameraGroup to the cameras array
+
+  camera.lookAt(new THREE.Vector3(0, 0, 0)); // Main camera looks at (0,0,0)
+  vrCameraGroup.lookAt(new THREE.Vector3(0, 0, 0)); // vrCameraGroup looks at (0,0,0)
+  
   controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 0, 0);
   controls.update();
@@ -315,6 +327,7 @@ function init() {
 function setupVR() {
   'use strict';
   renderer.xr.enabled = true;
+
   document.body.appendChild(VRButton.createButton(renderer));
 }
 
