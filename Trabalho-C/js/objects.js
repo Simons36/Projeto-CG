@@ -94,181 +94,181 @@ function createGeometry(vertices, indices, material) {
   return { mesh, wireframe };
 }
   
-  function createTelhado(casa, x, y, z) {
+function createTelhado(casa, x, y, z) {
     const vertices = new Float32Array([
-      // Base da piramide
-      -10 + x, 10 + y, 10 + z,
-      20 + x, 10 + y, 10 + z,
-      20 + x, 10 + y, -10 + z,
-      -10 + x, 10 + y, -10 + z,
-      // Faces laterais
-      5 + x, 15 + y, 0 + z, // Vertice do topo
+        // Base da piramide
+        -10 + x, 10 + y, 10 + z,
+        20 + x, 10 + y, 10 + z,
+        20 + x, 10 + y, -10 + z,
+        -10 + x, 10 + y, -10 + z,
+        // Faces laterais
+        5 + x, 15 + y, 0 + z, // Vertice do topo
     ]);
-  
+
     const indices = [
-      // Base da piramide
-      0, 1, 2, // Triângulo 1
-      0, 2, 3, // Triângulo 2
-      // Faces laterais
-      4, 0, 1, // Triângulo lateral 1
-      4, 1, 2, // Triângulo lateral 2
-      4, 2, 3, // Triângulo lateral 3
-      4, 3, 0, // Triângulo lateral 4
+        // Base da piramide
+        0, 1, 2, // Triângulo 1
+        0, 2, 3, // Triângulo 2
+        // Faces laterais
+        4, 0, 1, // Triângulo lateral 1
+        4, 1, 2, // Triângulo lateral 2
+        4, 2, 3, // Triângulo lateral 3
+        4, 3, 0, // Triângulo lateral 4
     ];
-  
+
     const { mesh, wireframe } = createGeometry(vertices, indices, sceneMaterials.Telhado);
     casa.add(mesh, wireframe);
     mesh.name = 'Telhado';
-  }
+}
   
-  function createChamine(casa, x, y, z) {
+function createChamine(casa, x, y, z) {
     const vertices = new Float32Array([
-      // Frente
-      7.5 + x, 11.1 + y, 8 + z,
-      12.5 + x, 11.1 + y, 8 + z,
-      7.5 + x, 18 + y, 8 + z,
-      12.5 + x, 18 + y, 8 + z,
-      // Trás
-      7.5 + x, 12.2 + y, 6 + z,
-      12.5 + x, 12.2 + y, 6 + z,
-      7.5 + x, 18 + y, 6 + z,
-      12.5 + x, 18 + y, 6 + z,
+    // Frente
+    7.5 + x, 11.1 + y, 8 + z,
+    12.5 + x, 11.1 + y, 8 + z,
+    7.5 + x, 18 + y, 8 + z,
+    12.5 + x, 18 + y, 8 + z,
+    // Trás
+    7.5 + x, 12.2 + y, 6 + z,
+    12.5 + x, 12.2 + y, 6 + z,
+    7.5 + x, 18 + y, 6 + z,
+    12.5 + x, 18 + y, 6 + z,
     ]);
-  
+
     const indices = [
-      // Frente
-      0, 1, 2,
-      2, 1, 3,
-      // Lado direito
-      1, 5, 3,
-      3, 5, 7,
-      // Lado esquerdo
-      4, 0, 6,
-      6, 0, 2,
-      // Topo
-      2, 3, 6,
-      6, 3, 7,
-      // Base
-      1, 0, 5,
-      5, 0, 4,
-      // Trás
-      5, 4, 7,
-      7, 4, 6,
+    // Frente
+    0, 1, 2,
+    2, 1, 3,
+    // Lado direito
+    1, 5, 3,
+    3, 5, 7,
+    // Lado esquerdo
+    4, 0, 6,
+    6, 0, 2,
+    // Topo
+    2, 3, 6,
+    6, 3, 7,
+    // Base
+    1, 0, 5,
+    5, 0, 4,
+    // Trás
+    5, 4, 7,
+    7, 4, 6,
     ];
-  
+
     const { mesh, wireframe } = createGeometry(vertices, indices, sceneMaterials.Chamine);
     casa.add(mesh, wireframe);
     mesh.name = 'Chamine';
-  }
+}
   
-  function createEstrutura(casa, x, y, z) {
+function createEstrutura(casa, x, y, z) {
     const vertices = new Float32Array([
-      // Frente
-      -10 + x, 0 + y, 10 + z,
-      20 + x, 0 + y, 10 + z,
-      -10 + x, 10 + y, 10 + z,
-      20 + x, 10 + y, 10 + z,
-      // Trás
-      -10 + x, 0 + y, -10 + z,
-      20 + x, 0 + y, -10 + z,
-      -10 + x, 10 + y, -10 + z,
-      20 + x, 10 + y, -10 + z,
+        // Frente
+        -10 + x, 0 + y, 10 + z,
+        20 + x, 0 + y, 10 + z,
+        -10 + x, 10 + y, 10 + z,
+        20 + x, 10 + y, 10 + z,
+        // Trás
+        -10 + x, 0 + y, -10 + z,
+        20 + x, 0 + y, -10 + z,
+        -10 + x, 10 + y, -10 + z,
+        20 + x, 10 + y, -10 + z,
     ]);
-  
+
     const indices = [
-      // Frente
-      0, 1, 2,
-      2, 1, 3,
-      // Lado direito
-      1, 5, 3,
-      3, 5, 7,
-      // Lado esquerdo
-      4, 0, 6,
-      6, 0, 2,
-      // Topo
-      2, 3, 6,
-      6, 3, 7,
-      // Base
-      1, 0, 5,
-      5, 0, 4,
-      // Trás
-      5, 4, 7,
-      7, 4, 6,
+        // Frente
+        0, 1, 2,
+        2, 1, 3,
+        // Lado direito
+        1, 5, 3,
+        3, 5, 7,
+        // Lado esquerdo
+        4, 0, 6,
+        6, 0, 2,
+        // Topo
+        2, 3, 6,
+        6, 3, 7,
+        // Base
+        1, 0, 5,
+        5, 0, 4,
+        // Trás
+        5, 4, 7,
+        7, 4, 6,
     ];
-  
+
     const { mesh, wireframe } = createGeometry(vertices, indices, sceneMaterials.Estrutura);
     casa.add(mesh, wireframe);
     mesh.name = 'Estrutura';
-  }
+}
 
-  function createPorta(casa, x, y, z) {
+function createPorta(casa, x, y, z) {
     const vertices = new Float32Array([
-      20.1 + x, 0 + y, 3 + z,
-      20.1 + x, 6 + y, 3 + z,
-      20.1 + x, 0 + y, 6 + z,
-      20.1 + x, 6 + y, 6 + z,
+        20.1 + x, 0 + y, 3 + z,
+        20.1 + x, 6 + y, 3 + z,
+        20.1 + x, 0 + y, 6 + z,
+        20.1 + x, 6 + y, 6 + z,
     ]);
-  
+
     const indices = [
-      0, 1, 2,
-      2, 1, 3,
+        0, 1, 2,
+        2, 1, 3,
     ];
-  
+
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
-  
+
     const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const mesh = new THREE.Mesh(geometry, material);
     casa.add(mesh);
-  }
+}
 
-  function createFrontJanela(casa, x, y, z) {
+function createFrontJanela(casa, x, y, z) {
     const vertices = new Float32Array([
-      20.1 + x, 3 + y, -5 + z,
-      20.1 + x, 6 + y, -5 + z,
-      20.1 + x, 3 + y, -2 + z,
-      20.1 + x, 6 + y, -2 + z,
+    20.1 + x, 3 + y, -5 + z,
+    20.1 + x, 6 + y, -5 + z,
+    20.1 + x, 3 + y, -2 + z,
+    20.1 + x, 6 + y, -2 + z,
     ]);
-  
+
     const indices = [
-      0, 1, 2,
-      2, 1, 3,
+    0, 1, 2,
+    2, 1, 3,
     ];
-  
+
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
-  
+
     const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const mesh = new THREE.Mesh(geometry, material);
     casa.add(mesh);
-  }
+}
 
-  function createSideJanela(casa, x, y, z) {
+function createSideJanela(casa, x, y, z) {
     const vertices = new Float32Array([
-      3 + x, 3 + y, 10.1 + z,
-      6 + x, 3 + y, 10.1 + z,
-      3 + x, 6 + y, 10.1 + z,
-      6 + x, 6 + y, 10.1 + z,
+        3 + x, 3 + y, 10.1 + z,
+        6 + x, 3 + y, 10.1 + z,
+        3 + x, 6 + y, 10.1 + z,
+        6 + x, 6 + y, 10.1 + z,
     ]);
-  
+
     const indices = [
-      0, 1, 2,
-      2, 1, 3,
+        0, 1, 2,
+        2, 1, 3,
     ];
-  
+
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
-  
+
     const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const mesh = new THREE.Mesh(geometry, material);
     casa.add(mesh);
-  }
+}
   
   
-  function createCasa(x, y, z) {
+function createCasa(x, y, z) {
     const casa = new THREE.Group();
     createEstrutura(casa, x, y, z);
     createTelhado(casa, x, y, z);
@@ -280,9 +280,9 @@ function createGeometry(vertices, indices, material) {
     createSideJanela(casa, x-8, y, z);
     scene.add(casa);
     return casa;
-  }
+}
 
-  function createSobreiro(x, y, z, scale = 1, direction) {
+function createSobreiro(x, y, z, scale = 1, direction) {
     const sobreiro = new THREE.Group();
   
     // Main Stem (Oblique Cylinder)
@@ -336,6 +336,8 @@ function createGeometry(vertices, indices, material) {
   
   scene.add(sobreiro);
 }
+
+
 
 function createRandomSobreiros(count) {
   const range = 360;

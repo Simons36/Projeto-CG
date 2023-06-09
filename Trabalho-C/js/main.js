@@ -10,7 +10,6 @@ function createScene() {
 
   scene = new THREE.Scene();
 
-
   // Create the field geometry
   const fieldGeometry = new THREE.PlaneGeometry(500, 500, 500, 500);
 
@@ -33,18 +32,16 @@ function createScene() {
   const skyMaterial = new THREE.MeshBasicMaterial({ map: skyTexture, side: THREE.BackSide });
 
   // Create the sky geometry
-  const skyGeometry = new THREE.SphereGeometry(500, 32, 32); // Adjust the size as needed
+  const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
 
   // Create the sky mesh
   skyMesh = new THREE.Mesh(skyGeometry, skyMaterial);
   scene.add(skyMesh);
 
-
-
   casa = createCasa(0, 0, 0);
   casa.name = 'Casa';
 
-  createRandomSobreiros(100);
+  createRandomSobreiros(100); // create 100 sobreiros randomly placed
 
   ovni = createOVNI(0, 30, 0);
   ovni.name = 'OVNI';
@@ -235,7 +232,7 @@ function moveOVNI() {
 
 
 function updateOVNIVelocity() {
-  const speed = 0.5; // Adjust the speed as desired
+  const speed = 0.5;
 
   ovniVelocityX = 0;
   ovniVelocityZ = 0;
@@ -292,6 +289,7 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
 
+
   container.appendChild(renderer.domElement);
 
   // Create and configure the camera
@@ -332,7 +330,7 @@ function animate() {
   updateOVNIVelocity();
   moveOVNI();
   
-  requestAnimationFrame(animate);
+  renderer.setAnimationLoop(animate);
 }
 
 
@@ -344,21 +342,6 @@ function createCameras(){
     
     cameras[0] = createOrthographicCamera(170, 10, 200);
     cameras[1] = createOrthographicCamera(0, 200, 200);
-}
-
-
-function createPerspCamera(array) {
-    'use strict';
-
-    let cameraTemp = new THREE.PerspectiveCamera(70,
-                                          window.innerWidth / window.innerHeight,
-                                          1,
-                                          1000);
-    cameraTemp.position.x = array[0];
-    cameraTemp.position.y = array[1];
-    cameraTemp.position.z = array[2];
-    cameraTemp.lookAt(scene.position);
-    return cameraTemp;
 }
 
 
