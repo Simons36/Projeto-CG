@@ -19,16 +19,15 @@ function generateInitialFieldMaterial() {
     // Load the heightmap texture
     const heightmapTexture = new THREE.TextureLoader()
         .load('images/heightmap.png');
-    console.log(heightmapTexture);
          
     heightmapTexture.wrapS = heightmapTexture.wrapT = THREE.RepeatWrapping;
-    heightmapTexture.repeat.set(4, 4);
+    heightmapTexture.repeat.set(4, 1);
   
     // Create the material with the initial texture and heightmap
     const fieldMaterial = new THREE.MeshStandardMaterial({
       map: texture,
       displacementMap: heightmapTexture,
-      displacementScale: 20,
+      displacementScale: 23,
     });
   
     // Return the material instead of the texture
