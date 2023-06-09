@@ -363,7 +363,7 @@ function createRandomSobreiros(count) {
 
     const scale = Math.random() * 0.5 + 1; // Random scale within a range (1 to 1.5)
 
-    createSobreiro(x, 0, z, scale, direction);
+    createSobreiro(x, -2, z, scale, direction);
   }
 }
 

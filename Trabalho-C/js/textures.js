@@ -95,8 +95,8 @@ function updateSkyTexture(texture) {
     const context = canvas.getContext('2d');
 
     // Draw additional stars
-    const starCount = 200; // Adjust the number of stars to add per update
-    const starRadius = 0.3; // Adjust the radius of the stars
+    const starCount = 700; // Adjust the number of stars to add per update
+    const starRadius = 0.05; // Adjust the radius of the stars
 
     for (let i = 0; i < starCount; i++) {
         const x = Math.random() * size;
